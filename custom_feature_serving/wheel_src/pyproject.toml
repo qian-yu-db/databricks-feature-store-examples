@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "claims_fe"
+version = "0.1.0"
+description = "Claim feature-engineering pyfunc — regex/dict-based extractors for insurance claim payloads."
+requires-python = ">=3.10"
+dependencies = [
+    "pandas>=1.5",
+    "numpy>=1.23",
+]
+
+[tool.setuptools.packages.find]
+include = ["claims_fe*"]

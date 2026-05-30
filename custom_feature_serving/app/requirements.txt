@@ -1,0 +1,10 @@
+fastapi>=0.110
+uvicorn[standard]>=0.27
+gradio~=4.44.0
+huggingface-hub~=0.35.3
+orjson>=3.9
+pydantic>=2.0
+httpx>=0.26
+pandas~=2.2.3
+numpy>=1.23
+claims_fe @ file:///Volumes/fins_genai/classic_ml/claims_fe_wheels/claims_fe-0.1.0-py3-none-any.whl

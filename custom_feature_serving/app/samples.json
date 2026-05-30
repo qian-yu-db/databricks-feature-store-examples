@@ -1,0 +1,3 @@
+{
+  "SYN-000": "{\"Claims\": [{\"NK_CLM_ID\": \"ccp:1\", \"CLM_NUM\": \"1-1\", \"CLM_DESC_TXT\": \"test\", \"CLM_LOB_TYP_CD\": \"HomeownersLine_HOE\", \"CLM_LOSS_DTTM\": \"2025-01-01T00:00:00\", \"CLM_RPRTD_DTTM\": \"2025-01-03T00:00:00\", \"LOSS_CSE_TYP_CD\": \"Water_Ext\", \"CLM_SBTYP_CD\": \"WaterAndFreezing_Ext\", \"CLM_GRP_TYP_CD\": \"Foremost\", \"PLCY_STATE\": \"CA\", \"JURISDCTN_STATE_TYP_CD\": \"CA\", \"PRPTY_CNSTRCTN_YR\": 1963, \"WATER_SRC_TYP_CD\": \"other\", \"ConcatenatedDocs\": \"doc text\", \"ConcatenatedNotes\": \"note with attorney representing\", \"ConcatenatedIncidents\": \"incident\", \"Exposures\": [{\"EXPSR_TYP_CD\": \"Dwelling\"}]}]}"
+}

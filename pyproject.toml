@@ -1,0 +1,19 @@
+[project]
+name = "credit-risk-pipeline"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "xgboost>=2.0",
+    "mlflow>=3.0",
+    "databricks-feature-engineering",
+    "databricks-connect>=16.4,<17.4",
+    "databricks-sdk",
+    "pandas",
+    "numpy",
+    "faker",
+    "scikit-learn",
+    "locust==2.32.6",
+    "gevent==24.11.1",
+    "matplotlib>=3.10.8",
+    "ipykernel>=7.2.0",
+]

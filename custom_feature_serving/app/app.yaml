@@ -1,0 +1,12 @@
+command: ["python", "app.py"]
+
+env:
+  - name: FEATURE_VERSION
+    value: "0.1.0"
+
+resources:
+  - name: wheels_volume
+    description: "UC Volume containing the claims_fe wheel (pip install target)"
+    volume:
+      name: "fins_genai.classic_ml.claims_fe_wheels"
+      permission: "READ_VOLUME"
