@@ -1,37 +1,104 @@
-# databricks-feature-store-examples
+# Databricks ML Examples
 
-End-to-end, runnable examples of the different feature engineering and feature serving
-patterns available on Databricks — from managed on-demand UDFs and declarative feature
-pipelines to fully custom pyfunc serving endpoints. Each example is self-contained and
-includes the notebooks/code needed to reproduce it in a Databricks workspace.
+Runnable Databricks examples and reference notes for feature engineering, feature
+serving, model training, hyperparameter tuning, and MLOps project scaffolding.
 
-## Examples in this repo
+Most examples are organized as self-contained folders with their own README and
+numbered Databricks notebooks/scripts. The root `pyproject.toml` provides a local
+Python environment for notebook editing, load testing, and utility work, while the
+notebooks themselves install any workspace-specific dependencies they need.
 
-### [`on_demand_feature/`](./on_demand_feature) — On-demand features (managed, GA)
+## Repository Layout
 
-Computes derived features at training and serving time using Unity Catalog Python UDFs
-bound to the model via `FeatureEngineeringClient` + `FeatureFunction`. No online table
-required — the serving endpoint calls the UDFs automatically. Uses a synthetic
-loan-application credit-risk scenario.
+| Path | Contents |
+| --- | --- |
+| [`on_demand_feature/`](./on_demand_feature) | End-to-end managed on-demand feature example using Unity Catalog Python UDFs, `FeatureEngineeringClient`, `FeatureFunction`, XGBoost, MLflow, and Databricks Model Serving. |
+| [`custom_feature_serving/`](./custom_feature_serving) | Custom insurance-claims feature transformer packaged as a wheel and deployed through both Databricks Model Serving and Databricks Apps for latency comparison. |
+| [`xgboost_optuna_example/`](./xgboost_optuna_example) | Three approaches for XGBoost + Optuna hyperparameter tuning on a single 4-GPU Databricks node. |
+| [`mlops_stack_prep/`](./mlops_stack_prep) | Guides for simplifying and customizing Databricks MLOps Stacks / Asset Bundle templates. |
+| [`docs/`](./docs) | Reference PDFs for MLOps on Databricks and ML model telemetry to Unity Catalog. |
+| [`imgs/`](./imgs) | Diagrams used by the feature store and feature serving materials. |
 
-| Notebook | Purpose |
-|----------|---------|
-| `01_generate_data.py` | Generate synthetic customer / loan / payment Delta tables |
-| `02_register_features.py` | Register on-demand feature UDFs in Unity Catalog |
-| `03_train_models.py` | Train XGBoost models with on-demand `FeatureFunction` features |
-| `04_log_model.py` | Log the ensemble model with `fe.log_model()` so UDFs run at serving time |
-| `05_inference.py` | Batch (`fe.score_batch`) and direct pyfunc inference |
+## Examples
 
-### [`custom_feature_serving/`](./custom_feature_serving) — Custom feature serving endpoint
+### On-Demand Features
 
-A fully custom, CPU-only regex/dictionary feature transformer (`claims_fe` wheel) served
-through **two parallel deployment tracks** and benchmarked head-to-head:
+[`on_demand_feature/`](./on_demand_feature) demonstrates a loan-application
+credit-risk workflow where derived features are computed by Unity Catalog Python
+UDFs at both training and serving time. The model is logged with
+`fe.log_model()` so Databricks resolves the `FeatureFunction` bindings before
+the pyfunc model runs.
 
-- **Track A — Model Serving pyfunc**: `mlflow.pyfunc.PythonModel` → MLflow scoring server → Databricks Model Serving.
-- **Track B — Databricks App**: FastAPI + uvicorn + orjson with a Gradio UI.
+Run the notebooks in order:
 
-Both tracks install and call the same wheel, so any latency delta reflects only the
-serving shell. Numbered notebooks `01_…06_` run the end-to-end workflow (synthetic
-payloads → build wheel → deploy → test → compare); `load_testing/` provides local load
-tests. See [`custom_feature_serving/README.md`](./custom_feature_serving/README.md) for
-the full walkthrough.
+| File | Purpose |
+| --- | --- |
+| `01_generate_data.py` | Generate synthetic customer, loan application, and payment-history Delta tables. |
+| `02_register_features.py` | Register Unity Catalog Python UDFs for derived features such as debt-to-income and credit utilization. |
+| `03_train_models.py` | Build the training set and train five XGBoost risk sub-models. |
+| `04_log_model.py` | Log and register the ensemble pyfunc model with on-demand feature bindings. |
+| `05_inference.py` | Run batch scoring, direct pyfunc inference, and Model Serving endpoint queries. |
+
+### Custom Feature Serving
+
+[`custom_feature_serving/`](./custom_feature_serving) builds a deterministic
+Guidewire ClaimCenter-style feature transformer (`claims_fe`) and serves the
+same wheel through two deployment shells:
+
+| Track | Stack | Primary files |
+| --- | --- | --- |
+| Model Serving pyfunc | `mlflow.pyfunc.PythonModel` deployed to Databricks Model Serving | `03_log_and_deploy.ipynb`, `04_test_fe_endpoint.ipynb` |
+| Databricks App | FastAPI + uvicorn + orjson with a Gradio UI | `05_build_and_deploy_app.ipynb`, `app/` |
+
+The workflow notebooks cover synthetic payload generation, wheel build,
+deployment, endpoint testing, app deployment, and side-by-side comparison:
+`01_generate_synthetic_payloads.ipynb` through `06_compare_endpoints.ipynb`.
+Additional Locust-based load testing utilities live in
+[`custom_feature_serving/load_testing/`](./custom_feature_serving/load_testing).
+
+### XGBoost + Optuna on GPUs
+
+[`xgboost_optuna_example/`](./xgboost_optuna_example) compares three patterns
+for tuning XGBoost on a single `g5.24xlarge` Databricks GPU node with 4 A10G
+GPUs:
+
+| File | Approach |
+| --- | --- |
+| `xgboost_optuna_approach_1.py` | Non-Spark XGBoost + Optuna `MlflowSparkStudy` with in-memory NumPy arrays. |
+| `xgboost_optuna_approach_2.py` | Non-Spark XGBoost + Optuna `MlflowSparkStudy` with local NVMe parquet streaming. |
+| `xgboost_optuna_approach_3.py` | `xgboost.spark` with Optuna running in the driver process. |
+
+The child README explains the CPU memory, GPU memory, and trial-parallelism
+trade-offs for each approach.
+
+## Local Environment
+
+This repository uses `uv` for local dependency management:
+
+```bash
+uv sync
+```
+
+The root environment targets Python 3.12 and includes common dependencies used
+across the examples, including XGBoost, MLflow, Databricks Connect, the
+Databricks SDK, pandas, NumPy, Faker, scikit-learn, Locust, and matplotlib.
+
+Use the local environment for editing notebooks, running the load-test client,
+or developing supporting code. The Databricks examples themselves are intended
+to run in a Databricks workspace with access to Unity Catalog, MLflow, Model
+Serving, and the workspace paths/catalogs configured inside each notebook.
+
+## Configuration Notes
+
+- Several notebooks use example catalog and schema names such as
+  `fins_genai.classic_ml`; update those constants before running in your own
+  workspace.
+- The on-demand feature example requires Unity Catalog and Databricks Feature
+  Engineering in Unity Catalog.
+- The custom feature serving example requires permissions to create/register
+  models, deploy Model Serving endpoints, and deploy Databricks Apps.
+- Load testing requires a service principal with `CAN_QUERY` on the target
+  serving endpoint.
+
+See each subdirectory README for the complete setup, execution order, and
+deployment details.
