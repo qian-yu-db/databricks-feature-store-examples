@@ -383,8 +383,8 @@ Create a config file (`config.json`):
 {
   "input_project_name": "my_ml_project",
   "input_root_dir": "my_ml_project",
-  "input_databricks_staging_workspace_host": "https://adb-4122761581238891.11.azuredatabricks.net",
-  "input_databricks_prod_workspace_host": "https://adb-3561884492147148.8.azuredatabricks.net",
+  "input_databricks_staging_workspace_host": "https://adb-1111111111111111.1.azuredatabricks.net",
+  "input_databricks_prod_workspace_host": "https://adb-2222222222222222.2.azuredatabricks.net",
   "input_read_user_group": "users"
 }
 ```
