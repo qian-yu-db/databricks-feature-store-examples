@@ -1,29 +1,43 @@
 # Databricks ML Examples
 
-Runnable Databricks examples and reference notes for feature engineering, feature
-serving, model training, hyperparameter tuning, and MLOps project scaffolding.
+Runnable Databricks examples and reference notes for development setup, feature
+engineering, feature serving, model training, hyperparameter tuning, and MLOps
+project scaffolding.
 
-Most examples are organized as self-contained folders with their own README and
-numbered Databricks notebooks/scripts. The root `pyproject.toml` provides a local
-Python environment for notebook editing, load testing, and utility work, while the
-notebooks themselves install any workspace-specific dependencies they need.
+Examples are grouped into four topic folders — `development_setup/`,
+`feature_engineering/`, `model_training/`, and `mlops/` — each containing
+self-contained sub-projects with their own README and numbered Databricks
+notebooks/scripts. The root `pyproject.toml` provides a local Python environment
+for notebook editing, load testing, and utility work, while the notebooks
+themselves install any workspace-specific dependencies they need.
 
 ## Repository Layout
 
-| Path | Contents |
-| --- | --- |
-| [`on_demand_feature/`](./on_demand_feature) | End-to-end managed on-demand feature example using Unity Catalog Python UDFs, `FeatureEngineeringClient`, `FeatureFunction`, XGBoost, MLflow, and Databricks Model Serving. |
-| [`custom_feature_serving/`](./custom_feature_serving) | Custom insurance-claims feature transformer packaged as a wheel and deployed through both Databricks Model Serving and Databricks Apps for latency comparison. |
-| [`xgboost_optuna_example/`](./xgboost_optuna_example) | Three approaches for XGBoost + Optuna hyperparameter tuning on a single 4-GPU Databricks node. |
-| [`mlops_stack_prep/`](./mlops_stack_prep) | Guides for simplifying and customizing Databricks MLOps Stacks / Asset Bundle templates. |
-| [`docs/`](./docs) | Reference PDFs for MLOps on Databricks and ML model telemetry to Unity Catalog. |
-| [`imgs/`](./imgs) | Diagrams used by the feature store and feature serving materials. |
+| Topic | Sub-project | Contents |
+| --- | --- | --- |
+| [`development_setup/`](./development_setup) | [`vscode_example/`](./development_setup/vscode_example) | Local IDE workflow with Databricks Connect, VS Code, and Databricks Asset Bundles — environment setup, `src/` package, and demo notebooks. See its `GUIDE.md`. |
+| [`feature_engineering/`](./feature_engineering) | [`on_demand_feature/`](./feature_engineering/on_demand_feature) | End-to-end managed on-demand feature example using Unity Catalog Python UDFs, `FeatureEngineeringClient`, `FeatureFunction`, XGBoost, MLflow, and Databricks Model Serving. |
+| | [`custom_feature_serving/`](./feature_engineering/custom_feature_serving) | Custom insurance-claims feature transformer packaged as a wheel and deployed through both Databricks Model Serving and Databricks Apps for latency comparison. |
+| | [`uc_python_udf_custom_deps/`](./feature_engineering/uc_python_udf_custom_deps) | Modular, Python-driven pattern for registering Unity Catalog Python UDFs that carry custom pip dependencies via the `ENVIRONMENT` clause. |
+| [`model_training/`](./model_training) | [`xgboost_optuna_example/`](./model_training/xgboost_optuna_example) | Training and hyperparameter-tuning a model on a dataset larger than a single GPU's memory using classic multi-GPU compute — three patterns (in-memory, NVMe streaming, distributed Spark) with XGBoost + Optuna. |
+| [`mlops/`](./mlops) | [`mlops_stack_prep/`](./mlops/mlops_stack_prep) | Guides for simplifying and customizing Databricks MLOps Stacks / Asset Bundle templates. |
+| [`docs/`](./docs) | — | *Machine Learning on Databricks* reference guide (`ml-on-databricks-guide`, `.md` + `.pdf`) covering dev setup, the ML lifecycle, platform capabilities, and MLOps promotion patterns. |
+| [`imgs/`](./imgs) | — | Diagrams used by the feature store and feature serving materials. |
 
 ## Examples
 
+### Development Setup
+
+[`development_setup/vscode_example/`](./development_setup/vscode_example)
+demonstrates a local IDE development workflow for Databricks: authoring code and
+notebooks in VS Code, running them against a workspace with Databricks Connect,
+and deploying with Databricks Asset Bundles (`databricks.yml`). Start with its
+[`GUIDE.md`](./development_setup/vscode_example/GUIDE.md) for environment setup,
+then explore the `src/` package and demo notebooks.
+
 ### On-Demand Features
 
-[`on_demand_feature/`](./on_demand_feature) demonstrates a loan-application
+[`feature_engineering/on_demand_feature/`](./feature_engineering/on_demand_feature) demonstrates a loan-application
 credit-risk workflow where derived features are computed by Unity Catalog Python
 UDFs at both training and serving time. The model is logged with
 `fe.log_model()` so Databricks resolves the `FeatureFunction` bindings before
@@ -41,7 +55,7 @@ Run the notebooks in order:
 
 ### Custom Feature Serving
 
-[`custom_feature_serving/`](./custom_feature_serving) builds a deterministic
+[`feature_engineering/custom_feature_serving/`](./feature_engineering/custom_feature_serving) builds a deterministic
 Guidewire ClaimCenter-style feature transformer (`claims_fe`) and serves the
 same wheel through two deployment shells:
 
@@ -54,22 +68,35 @@ The workflow notebooks cover synthetic payload generation, wheel build,
 deployment, endpoint testing, app deployment, and side-by-side comparison:
 `01_generate_synthetic_payloads.ipynb` through `06_compare_endpoints.ipynb`.
 Additional Locust-based load testing utilities live in
-[`custom_feature_serving/load_testing/`](./custom_feature_serving/load_testing).
+[`feature_engineering/custom_feature_serving/load_testing/`](./feature_engineering/custom_feature_serving/load_testing).
 
-### XGBoost + Optuna on GPUs
+### UC Python UDFs with Custom Dependencies
 
-[`xgboost_optuna_example/`](./xgboost_optuna_example) compares three patterns
-for tuning XGBoost on a single `g5.24xlarge` Databricks GPU node with 4 A10G
-GPUs:
+[`feature_engineering/uc_python_udf_custom_deps/`](./feature_engineering/uc_python_udf_custom_deps)
+shows how to register Unity Catalog Python UDFs that carry **custom pip
+dependencies** via the `ENVIRONMENT` clause. UDF bodies live in
+`udf_functions.py` and shared dependencies in `requirements.txt`; the notebook
+extracts each function body with `inspect` and generates one
+`CREATE OR REPLACE FUNCTION … ENVIRONMENT (…)` per UDF, so all UDFs share a
+single environment. This is a UDF authoring/packaging pattern, distinct from the
+on-demand feature example above.
 
-| File | Approach |
+### Training & Tuning on Large Datasets with Classic GPU Compute
+
+[`model_training/xgboost_optuna_example/`](./model_training/xgboost_optuna_example) tackles
+a recurring problem: training and hyperparameter-tuning a model when the dataset is **larger
+than a single GPU's memory**, on **classic multi-GPU compute**. It compares three patterns
+for spending a fixed multi-GPU budget on a search (XGBoost + Optuna), trading per-trial
+capacity against search throughput:
+
+| File | Pattern |
 | --- | --- |
-| `xgboost_optuna_approach_1.py` | Non-Spark XGBoost + Optuna `MlflowSparkStudy` with in-memory NumPy arrays. |
-| `xgboost_optuna_approach_2.py` | Non-Spark XGBoost + Optuna `MlflowSparkStudy` with local NVMe parquet streaming. |
-| `xgboost_optuna_approach_3.py` | `xgboost.spark` with Optuna running in the driver process. |
+| `xgboost_optuna_approach_1.py` | Data held in memory; N concurrent trials, one per GPU (`MlflowSparkStudy`). |
+| `xgboost_optuna_approach_2.py` | Data streamed from local NVMe; N concurrent trials, one per GPU. |
+| `xgboost_optuna_approach_3.py` | Distributed `xgboost.spark`; one trial at a time across all N GPUs. |
 
-The child README explains the CPU memory, GPU memory, and trial-parallelism
-trade-offs for each approach.
+The child README explains the VRAM math, CPU-memory pressure, and trial-parallelism
+trade-offs, plus how to choose among the three.
 
 ## Local Environment
 

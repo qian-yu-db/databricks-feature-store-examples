@@ -108,6 +108,13 @@ w.serving_endpoints.query(
 Risk decision thresholds applied downstream: `< 0.3` → APPROVE, `> 0.6` → DENY, otherwise
 REVIEW.
 
+## See also
+
+The on-demand UDFs here are pure, dependency-free functions. If your UC Python
+UDFs need **custom pip dependencies** (e.g. `simplejson`, `pycryptodome`), see
+[`../uc_python_udf_custom_deps/`](../uc_python_udf_custom_deps) for a modular
+registration pattern using the `ENVIRONMENT` clause.
+
 ## References
 
 - [On-demand features](https://docs.databricks.com/aws/en/machine-learning/feature-store/on-demand-features)

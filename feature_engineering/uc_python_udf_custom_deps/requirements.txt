@@ -1,0 +1,4 @@
+# Shared dependencies for all UC Python UDFs
+# This file lives alongside the notebook and udf_functions.py
+simplejson==3.19.3
+pycryptodome==3.20.0
