@@ -222,3 +222,5 @@ __marimo__/
 
 # Isaac
 .isaac/
+
+.databricks
