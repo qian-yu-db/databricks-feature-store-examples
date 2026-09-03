@@ -222,3 +222,11 @@ __marimo__/
 
 # Isaac
 .isaac/
+
+.databricks
+
+# VS Code editor settings
+.vscode/
+
+# Top-level bundle config (workspace-specific; per-example databricks.yml still tracked)
+/databricks.yml

@@ -1,0 +1,66 @@
+# Declarative Automation Bundle — uv + pyproject.toml (no wheel)
+#
+# This bundle deploys Python source files directly to the workspace.
+# Dependencies declared in pyproject.toml are installed at runtime via
+# `--editable`, so there is NO wheel build step.
+#
+# The package version lives in pyproject.toml and is read at import time.
+
+bundle:
+  name: dab_uv_source_example
+
+variables:
+  catalog:
+    default: fins_genai
+  schema:
+    default: classic_ml
+
+# ── No 'artifacts' section ──
+# Omitting `artifacts` entirely means no whl is built during `bundle deploy`.
+# Source .py files are synced to the workspace as-is.
+
+resources:
+  # ─── Pipeline (Lakeflow SDP) example ────────────────────────────
+  # Uses environment.dependencies to pip-install from the deployed
+  # pyproject.toml at runtime, giving you access to both your own
+  # package modules AND all third-party deps declared in [project.dependencies].
+  pipelines:
+    etl_pipeline:
+      name: ${bundle.name}_etl
+      catalog: ${var.catalog}
+      schema: ${var.schema}
+      serverless: true
+      libraries:
+        - file:
+            path: src/transformations/etl.py
+      environment:
+        dependencies:
+          - --editable ${workspace.file_path}
+
+  # ─── Job example ────────────────────────────────────────────────
+  # For serverless jobs, deps go in `environment` (not `libraries`).
+  # Uses the same --editable pattern as the pipeline above.
+  jobs:
+    daily_job:
+      name: ${bundle.name}_daily
+      tasks:
+        - task_key: run_main
+          notebook_task:
+            notebook_path: src/main_notebook.py
+          environment_key: default
+
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "5"  # serverless base enviornment version
+            dependencies:
+              - --editable ${workspace.file_path}
+
+targets:
+  dev:
+    mode: development
+    default: true
+  staging:
+    mode: development
+  prod:
+    mode: production
